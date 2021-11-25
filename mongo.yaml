@@ -1,0 +1,67 @@
+# deployment
+apiVersion: apps/v1
+kind: Deployment # Blueprint for Pods
+metadata:
+  name: mongo-deployment
+  labels:
+    app: mongo
+spec:
+  replication: 1
+  selector:
+    matchLabels:
+      app: nginx
+    template: # Configuration for Pod
+      metadata:
+        labels:
+          app: mongo
+      spec:
+        containers:
+          - name: mongodb
+            image: mongo:5.0
+            ports:
+              - containerPort: 27017
+            env:
+              - name: MONGO_INITDB_ROOT_USERNAME
+                valueFrom:
+                  secretKeyRef:
+                    name: mongo-secret
+                    key: mongo-user
+              - name: MONGO_INITDB_ROOT_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: mongo-secret
+                      key: mongo-password
+              - name: DB_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: mongo-config
+                      key: mongo-url
+---
+# Service
+apiVersion: v1
+kind: Servie
+metadata:
+  name: mongo-service
+spec:
+  type: NodePort # External service type
+  selector:
+    app: MyApp
+  ports:
+    - protocol: TCP
+      port: 27017
+      targetPort: 27017
+      nodePort: 30100
+
+
+# kubectl get pod
+# kubectl apply -f mongo-config.yaml
+# kubectl apply -f mongo-secret.yaml
+# kubectl apply -f mongo.yaml
+# kubectl apply -f webapp.yaml
+
+# kubectl get all
+# kubectl get secret
+# kubectl get pod
+# kubectl --help
+# kubectl get --help
+

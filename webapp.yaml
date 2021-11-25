@@ -1,0 +1,47 @@
+# deployment
+apiVersion: apps/v1
+kind: Deployment # Blueprint for Pods
+metadata:
+  name: webapp-deployment
+  labels:
+    app: webapp
+spec:
+  replication: 1
+  selector:
+    matchLabels:
+      app: webapp
+    template: # Configuration for Pod
+      metadata:
+        labels:
+          app: webapp
+      spec:
+        containers:
+          - name: webapp
+            image: nanajanashia/k8s-demo-app:v1.0  #api server image
+            ports:
+              - containerPort: 3000
+            env:
+              - name: USER_NAME
+                valueFrom:
+                  secretKeyRef:
+                    name: mongo-secret
+                    key: mongo-user
+              - name: USER_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: mongo-secret
+                      key: mongo-password
+
+---
+# Service
+apiVersion: v1
+kind: Servie
+metadata:
+  name: webapp-service
+spec:
+  selector:
+    app: webapp
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
